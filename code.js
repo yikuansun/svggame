@@ -2,7 +2,7 @@ svgns = "http://www.w3.org/2000/svg";
 
 playerCoords = [];
 velocity_up = 0;
-velocity_left = 0;
+velocity_right = 0;
 
 function buildPlatform(x, y, width, height) {
     platform = document.createElementNS(svgns, "rect");
@@ -75,12 +75,12 @@ function detect_platform_collisions() {
             if (collision == "left") {
                 out.touching_left = true;
                 playerCoords[0] = parseFloat(platform.getAttribute("x")) - parseFloat(playerRect.getAttribute("width"));
-                velocity_left = 0;
+                velocity_right = 0;
             }
             else if (collision == "right") {
                 out.touching_right = true;
                 playerCoords[0] =  parseFloat(platform.getAttribute("x")) + parseFloat(platform.getAttribute("width"));
-                velocity_left = 0;
+                velocity_right = 0;
             }
             else if (collision == "top") {
                 out.touching_top = true;
@@ -115,7 +115,7 @@ function load() {
         velocity_up = velocity_up - 0.5;
     }
     else {
-        if (map[88]) {
+        if (map[88] && !(collisions.touching_top)) {
             velocity_up = 8;
         }
         else {
@@ -123,19 +123,19 @@ function load() {
         }
     }
     
-    if (map[39]) {
-        velocity_left += 2;
+    if (map[39] && !(collisions.touching_left)) {
+        velocity_right += 2;
     }
     
-    if (map[37]) {
-        velocity_left -= 2;
+    if (map[37] && !(collisions.touching_right)) {
+        velocity_right -= 2;
     }
 
-    velocity_left *= 0.75;
+    velocity_right *= 0.75;
     
     playerCoords[1] -= velocity_up;
-    if (Math.abs(velocity_left) >= 0.5) {
-        playerCoords[0] += velocity_left;
+    if (Math.abs(velocity_right) >= 0.5) {
+        playerCoords[0] += velocity_right;
     }
     
     playerRect.setAttribute("x", playerCoords[0]); playerRect.setAttribute("y", playerCoords[1]);
