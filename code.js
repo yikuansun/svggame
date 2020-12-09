@@ -95,6 +95,21 @@ function detect_platform_collisions() {
     return out;
 }
 
+function setscrolling(playerxpos, levelwidth) {
+    if ((-(playerxpos - 426)) < 0 && (-(playerxpos - 426)) > -levelwidth + 852) {
+        for (platform of document.getElementsByClassName("platform")) {
+            platform.style.transform = "translateX(" + (-(playerxpos - 426)).toString() + "px)";
+        }
+        playerRect.style.transform = "translateX(" + (-(playerxpos - 426)).toString() + "px)";
+    }
+    else {
+        playerRect.style.transform = "translateX(" + (((-(playerxpos - 426)) > 0)?0:-levelwidth + 852).toString() + "px)";
+        for (platform of document.getElementsByClassName("platform")) {
+            platform.style.transform = "translateX(" + (((-(playerxpos - 426)) > 0)?0:-levelwidth + 852).toString() + "px)";
+        }
+    }
+}
+
 map = {};
 
 function load() {
@@ -138,6 +153,8 @@ function load() {
     }
     
     playerRect.setAttribute("x", playerCoords[0]); playerRect.setAttribute("y", playerCoords[1]);
+
+    setscrolling(playerCoords[0], 1000);
 
     requestAnimationFrame(load);
 
