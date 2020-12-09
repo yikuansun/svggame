@@ -13,7 +13,7 @@ function buildPlatform(x, y, width, height) {
     platform.setAttribute("class", "platform");
 }
 
-function levelInit(playerX, playerY) {
+function levelInit(playerX, playerY, platformsMap) {
     document.getElementById("gameframe").style.backgroundColor = "deepskyblue";
 
     playerRect = document.createElementNS(svgns, "rect");
@@ -23,10 +23,9 @@ function levelInit(playerX, playerY) {
     playerRect.setAttribute("x", playerX); playerRect.setAttribute("y", playerY);
     document.getElementById("gameframe").appendChild(playerRect);
 
-    buildPlatform(0, 430, 852, 50);
-    buildPlatform(250, 380, 100, 50);
-    buildPlatform(400, 330, 100, 50);
-    buildPlatform(550, 280, 100, 50);
+    for (platform of platformsMap) {
+        buildPlatform(platform.x, platform.y, platform.width, platform.height)
+    }
 }
 
 function touching(rect1, rect2) {
@@ -144,5 +143,10 @@ function load() {
 
 }
 
-levelInit(50, 50);
+levelInit(50, 50, [
+    {x: 0, y: 430, width: 1000, height: 50},
+    {x: 250, y: 380, width: 100, height: 50},
+    {x: 400, y: 330, width: 100, height: 50},
+    {x: 550, y: 280, width: 100, height: 50}
+]);
 load();
