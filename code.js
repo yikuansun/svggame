@@ -76,6 +76,7 @@ function load() {
             break;
         }
     }
+    playerRect.setAttribute("y", parseFloat(playerRect.getAttribute("y")) + 1);
     if (map[88] && touching_rect_polygon(playerRect, groundPolygon)) {
         velocity_up = 8;
         console.log("hi")
