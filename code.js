@@ -61,14 +61,8 @@ function load() {
         e = e || event;
         map[e.keyCode] = e.type == 'keydown';
     }
-
-    touchingGround = touching_rect_polygon(playerRect, groundPolygon);
-
-    /*if (collisions.touching_bottom) {
-        velocity_up = -1;
-    }*/
     
-    if (!(touchingGround)) {
+    if (!(touching_rect_polygon(playerRect, groundPolygon))) {
         velocity_up = velocity_up - 0.5;
     }
     else {
