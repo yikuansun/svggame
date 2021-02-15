@@ -62,27 +62,17 @@ function load() {
         map[e.keyCode] = e.type == 'keydown';
     }
     
-    if (!(touching_rect_polygon(playerRect, groundPolygon))) {
-        velocity_up = velocity_up - 0.5;
+    velocity_up = velocity_up - 0.5;
+    if (map[88] && touching_rect_polygon(playerRect, groundPolygon)) {
+        velocity_up = 8;
     }
-    else {
-        if (map[88]) {
-            velocity_up = 8;
-        }
-        else {
-            velocity_up = 0;
-            var slope = 0;
-            while (touching_rect_polygon(playerRect, groundPolygon)) {
-                playerRect.setAttribute("y", parseFloat(playerRect.getAttribute("y")) - 0.5);
-                playerCoords[1] -= 0.5;
-                slope += 0.5;
-                if (slope > 8) {
-                    playerCoords[1] += slope;
-                    break;
-                }
-            }
-        }
+    
+    while (touching_rect_polygon(playerRect, groundPolygon)) {
+        velocity_up = 0;
+        playerRect.setAttribute("y", parseFloat(playerRect.getAttribute("y")) - 0.5);
+        playerCoords[1] -= 0.5;
     }
+    playerCoords[1] -= velocity_up;
     
     if (map[39]) {
         velocity_right += 2;
@@ -94,7 +84,6 @@ function load() {
 
     velocity_right *= 0.75;
     
-    playerCoords[1] -= velocity_up;
     if (Math.abs(velocity_right) >= 0.5) {
         playerCoords[0] += velocity_right;
     }
