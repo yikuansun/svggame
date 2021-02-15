@@ -4,16 +4,8 @@ playerCoords = [];
 velocity_up = 0;
 velocity_right = 0;
 
-function buildPlatform(x, y, width, height) {
-    platform = document.createElementNS(svgns, "rect");
-    platform.style.fill = "rgb(0, 120, 0)";
-    platform.setAttribute("width", width); platform.setAttribute("height", height);
-    platform.setAttribute("x", x); platform.setAttribute("y", y);
-    scrollelems.appendChild(platform);
-    platform.setAttribute("class", "platform");
-}
-
-function levelInit(playerX, playerY, platformsMap) {
+// PATH TO POLYGON: https://betravis.github.io/shape-tools/path-to-polygon/
+function levelInit(playerX, playerY, PolygonString) {
     document.getElementById("gameframe").style.backgroundColor = "deepskyblue";
 
     scrollelems = document.createElementNS(svgns, "g");
@@ -26,76 +18,30 @@ function levelInit(playerX, playerY, platformsMap) {
     playerRect.setAttribute("x", playerX); playerRect.setAttribute("y", playerY);
     scrollelems.appendChild(playerRect);
 
-    for (platform of platformsMap) {
-        buildPlatform(platform.x, platform.y, platform.width, platform.height)
-    }
+    groundPolygon = document.createElementNS(svgns, "polygon");
+    groundPolygon.setAttribute("points", PolygonString);
+    groundPolygon.style.fill = "rgb(0, 120, 0)";
+    scrollelems.appendChild(groundPolygon);
 }
 
-function touching(rect1, rect2) {
-    return !(
-        ((parseFloat(rect1.getAttribute("y")) + parseFloat(rect1.getAttribute("height"))) < (parseFloat(rect2.getAttribute("y")))) ||
-        (parseFloat(rect1.getAttribute("y")) > (parseFloat(rect2.getAttribute("y")) + parseFloat(rect2.getAttribute("height")))) ||
-        ((parseFloat(rect1.getAttribute("x")) + parseFloat(rect1.getAttribute("width"))) < parseFloat(rect2.getAttribute("x"))) ||
-        (parseFloat(rect1.getAttribute("x")) > (parseFloat(rect2.getAttribute("x")) + parseFloat(rect2.getAttribute("width"))))
-    );
-}
-
-function touching_direction(rect1, rect2) {
-    rect1_bottom = parseFloat(rect1.getAttribute("y")) + parseFloat(rect1.getAttribute("height"));
-    rect2_bottom = parseFloat(rect2.getAttribute("y")) + parseFloat(rect2.getAttribute("height"));
-    rect1_right = parseFloat(rect1.getAttribute("x")) + parseFloat(rect1.getAttribute("width"));
-    rect2_right = parseFloat(rect2.getAttribute("x")) + parseFloat(rect2.getAttribute("width"));
-    b_collision = rect1_bottom - parseFloat(rect2.getAttribute("y"));
-    t_collision = rect2_bottom - parseFloat(rect1.getAttribute("y"));
-    l_collision = rect1_right - parseFloat(rect2.getAttribute("x"));
-    r_collision = rect2_right - parseFloat(rect1.getAttribute("x"));
-    if (t_collision < b_collision && t_collision < l_collision && t_collision < r_collision) {
-        return "bottom";
+function parsePolygon(polygon_elem) {
+    var points = polygon_elem.getAttribute("points").split(",");
+    var out = [];
+    for (unparsed of points) {
+        out.push({x: parseFloat(unparsed.trim().split(" ")[0]), y: parseFloat(unparsed.trim().split(" ")[1])});
     }
-    if (b_collision < t_collision && b_collision < l_collision && b_collision < r_collision) {
-        return "top";
-    }
-    if (l_collision < r_collision && l_collision < t_collision && l_collision < b_collision) {
-        return "left";
-    }
-    if (r_collision < l_collision && r_collision < t_collision && r_collision < b_collision) {
-        return "right";
-    }
-}
-
-function detect_platform_collisions() {
-    out = {
-        touching_top: false,
-        touching_bottom: false,
-        touching_left: false,
-        touching_right: false
-    };
-
-    for (platform of document.getElementsByClassName("platform")) {
-        if (touching(playerRect, platform)) {
-            collision = touching_direction(playerRect, platform);
-            if (collision == "left") {
-                out.touching_left = true;
-                playerCoords[0] = parseFloat(platform.getAttribute("x")) - parseFloat(playerRect.getAttribute("width"));
-                velocity_right = 0;
-            }
-            else if (collision == "right") {
-                out.touching_right = true;
-                playerCoords[0] =  parseFloat(platform.getAttribute("x")) + parseFloat(platform.getAttribute("width"));
-                velocity_right = 0;
-            }
-            else if (collision == "bottom") {
-                out.touching_bottom = true;
-                playerCoords[1] = parseFloat(platform.getAttribute("y")) + parseFloat(platform.getAttribute("height"));
-            }
-            else if (collision == "top") {
-                out.touching_top = true;
-                playerCoords[1] = parseFloat(platform.getAttribute("y")) - parseFloat(playerRect.getAttribute("height"));
-            }
-        }
-    }
-
     return out;
+}
+
+function touching_rect_polygon(rect, polygon) {
+    var rectPoints = [
+        {x: parseFloat(rect.getAttribute("x")), y: parseFloat(rect.getAttribute("y"))},
+        {x: parseFloat(rect.getAttribute("x")) + parseFloat(rect.getAttribute("width")), y: parseFloat(rect.getAttribute("y"))},
+        {x: parseFloat(rect.getAttribute("x")) + parseFloat(rect.getAttribute("width")), y: parseFloat(rect.getAttribute("y")) + parseFloat(rect.getAttribute("height"))},
+        {x: parseFloat(rect.getAttribute("x")), y: parseFloat(rect.getAttribute("y")) + parseFloat(rect.getAttribute("height"))}
+    ];
+    var polygonPoints = parsePolygon(polygon);
+    return greinerHormann.intersection(rectPoints, polygonPoints);
 }
 
 function setscrolling(playerxpos, levelwidth) {
@@ -116,17 +62,17 @@ function load() {
         map[e.keyCode] = e.type == 'keydown';
     }
 
-    collisions = detect_platform_collisions();
+    touchingGround = touching_rect_polygon(playerRect, groundPolygon);
 
-    if (collisions.touching_bottom) {
+    /*if (collisions.touching_bottom) {
         velocity_up = -1;
-    }
+    }*/
     
-    if (!(collisions.touching_top)) {
+    if (!(touchingGround)) {
         velocity_up = velocity_up - 0.5;
     }
     else {
-        if (map[88] && !(collisions.touching_bottom)) {
+        if (map[88]) {
             velocity_up = 8;
         }
         else {
@@ -134,11 +80,11 @@ function load() {
         }
     }
     
-    if (map[39] && !(collisions.touching_left)) {
+    if (map[39]) {
         velocity_right += 2;
     }
     
-    if (map[37] && !(collisions.touching_right)) {
+    if (map[37]) {
         velocity_right -= 2;
     }
 
@@ -151,16 +97,11 @@ function load() {
     
     playerRect.setAttribute("x", playerCoords[0]); playerRect.setAttribute("y", playerCoords[1]);
 
-    setscrolling(playerCoords[0], 1000);
+    setscrolling(playerCoords[0], 1600);
 
     requestAnimationFrame(load);
 
 }
 
-levelInit(50, 50, [
-    {x: 0, y: 430, width: 1000, height: 50},
-    {x: 250, y: 380, width: 100, height: 50},
-    {x: 400, y: 330, width: 100, height: 50},
-    {x: 550, y: 280, width: 100, height: 50}
-]);
+levelInit(50, 50, "-33.000 317.000, 133.000 362.000, 385.000 310.000, 554.000 288.000, 564.000 240.000, 637.000 240.000, 640.000 288.000, 741.000 289.000, 757.000 240.000, 800.000 240.000, 811.000 283.000, 986.000 286.000, 1115.000 261.000, 1244.000 274.000, 1326.000 323.000, 1443.000 355.000, 1556.000 358.000, 1623.000 338.000, 1636.000 559.000, -46.000 605.000, -33.000 317.000");
 load();
