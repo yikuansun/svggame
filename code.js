@@ -61,7 +61,7 @@ function load() {
         e = e || event;
         map[e.keyCode] = e.type == 'keydown';
     }
-    
+
     velocity_up = velocity_up - 0.5;
     var slope = 0;
     while (touching_rect_polygon(playerRect, groundPolygon)) {
@@ -79,9 +79,7 @@ function load() {
     playerRect.setAttribute("y", parseFloat(playerRect.getAttribute("y")) + 1);
     if (map[88] && touching_rect_polygon(playerRect, groundPolygon)) {
         velocity_up = 8;
-        console.log("hi")
     }
-    console.log(map[88])
     playerCoords[1] -= velocity_up;
     
     if (map[39]) {
