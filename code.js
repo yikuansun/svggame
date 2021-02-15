@@ -77,6 +77,16 @@ function load() {
         }
         else {
             velocity_up = 0;
+            var slope = 0;
+            while (touching_rect_polygon(playerRect, groundPolygon)) {
+                playerRect.setAttribute("y", parseFloat(playerRect.getAttribute("y")) - 0.5);
+                playerCoords[1] -= 0.5;
+                slope += 0.5;
+                if (slope > 8) {
+                    playerCoords[1] += slope;
+                    break;
+                }
+            }
         }
     }
     
