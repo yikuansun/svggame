@@ -1,6 +1,5 @@
 svgns = "http://www.w3.org/2000/svg";
 
-playerCoords = [];
 velocity_up = 0;
 velocity_right = 0;
 
@@ -14,7 +13,7 @@ function levelInit(playerX, playerY, PolygonString) {
     playerRect = document.createElementNS(svgns, "rect");
     playerRect.style.fill = "rgb(0, 20, 100)";
     playerRect.setAttribute("width", 50); playerRect.setAttribute("height", 50);
-    playerCoords = [playerX, playerY];
+
     playerRect.setAttribute("x", playerX); playerRect.setAttribute("y", playerY);
     scrollelems.appendChild(playerRect);
 
@@ -62,25 +61,24 @@ function load() {
         map[e.keyCode] = e.type == 'keydown';
     }
 
+    var inair = true;
     velocity_up = velocity_up - 0.5;
+    playerRect.setAttribute("y", parseFloat(playerRect.getAttribute("y")) - velocity_up);
     var slope = 0;
     while (touching_rect_polygon(playerRect, groundPolygon)) {
         velocity_up = 0;
+        inair = false;
         playerRect.setAttribute("y", parseFloat(playerRect.getAttribute("y")) - 0.5);
-        playerCoords[1] -= 0.5;
-        slope += 0.5;
+        /*slope += 0.5;
         if (slope > 8) {
             playerRect.setAttribute("y", parseFloat(playerRect.getAttribute("y")) + slope);
-            playerCoords[1] += slope;
             velocity_right = 0;
             break;
-        }
+        }*/
     }
-    playerRect.setAttribute("y", parseFloat(playerRect.getAttribute("y")) + 1);
-    if (map[88] && touching_rect_polygon(playerRect, groundPolygon)) {
+    if (map[88] && !inair) {
         velocity_up = 8;
     }
-    playerCoords[1] -= velocity_up;
     
     if (map[39]) {
         velocity_right += 2;
@@ -93,12 +91,10 @@ function load() {
     velocity_right *= 0.75;
     
     if (Math.abs(velocity_right) >= 0.5) {
-        playerCoords[0] += velocity_right;
+        playerRect.setAttribute("x", parseFloat(playerRect.getAttribute("x")) + velocity_right);
     }
-    
-    playerRect.setAttribute("x", playerCoords[0]); playerRect.setAttribute("y", playerCoords[1]);
 
-    setscrolling(playerCoords[0], 1600);
+    setscrolling(parseFloat(playerRect.getAttribute("x")), 1600);
 
     requestAnimationFrame(load);
 
