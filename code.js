@@ -69,12 +69,12 @@ function load() {
         velocity_up = 0;
         inair = false;
         playerRect.setAttribute("y", parseFloat(playerRect.getAttribute("y")) - 0.5);
-        /*slope += 0.5;
-        if (slope > 8) {
+        slope += 0.5;
+        if (slope > 20) {
             playerRect.setAttribute("y", parseFloat(playerRect.getAttribute("y")) + slope);
             velocity_right = 0;
             break;
-        }*/
+        }
     }
     if (map[88] && !inair) {
         velocity_up = 8;
